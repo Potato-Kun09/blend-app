@@ -6,6 +6,7 @@ export interface User {
   bio?: string;
   spotifyConnected: boolean;
   email: string;
+  role?: 'user' | 'admin';
 }
 
 export interface Room {
