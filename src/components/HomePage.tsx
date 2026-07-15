@@ -13,6 +13,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
   const [loading, setLoading] = useState(true)
   const [showCreateRoom, setShowCreateRoom] = useState(false)
   const [newRoomName, setNewRoomName] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     loadRooms()
@@ -20,11 +21,12 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
 
   const loadRooms = async () => {
     try {
-      const { data, error } = await supabase.from('rooms').select('*').limit(10)
-      if (error) throw error
+      const { data, error: err } = await supabase.from('rooms').select('*').limit(10)
+      if (err) throw err
       setRooms(data || [])
     } catch (err) {
       console.error('Error loading rooms:', err)
+      setError('Failed to load rooms. Make sure your Supabase table exists.')
     } finally {
       setLoading(false)
     }
@@ -35,7 +37,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
     if (!newRoomName.trim()) return
 
     try {
-      const { data, error } = await supabase
+      const { data, error: err } = await supabase
         .from('rooms')
         .insert([
           {
@@ -46,14 +48,16 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
         ])
         .select()
 
-      if (error) throw error
+      if (err) throw err
       if (data) {
         setRooms([...rooms, data[0]])
         setNewRoomName('')
         setShowCreateRoom(false)
+        setError('')
       }
     } catch (err) {
       console.error('Error creating room:', err)
+      setError('Failed to create room. Check your Supabase permissions.')
     }
   }
 
@@ -82,6 +86,12 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-8">
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-500/20 border border-red-500/30 text-red-200 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Create Room Button */}
         <button
           onClick={() => setShowCreateRoom(!showCreateRoom)}
@@ -144,7 +154,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
                   <h3 className="font-bold text-lg">{room.name}</h3>
                   <p className="text-white/50 text-sm">{room.genre || 'Mixed'}</p>
                   <p className="text-white/40 text-xs mt-2">
-                    {room.isPrivate ? '🔒 Private' : '🌐 Public'}
+                    {room.is_private ? '🔒 Private' : '🌐 Public'}
                   </p>
                 </div>
               ))}
