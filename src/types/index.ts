@@ -11,20 +11,20 @@ export interface User {
 export interface Room {
   id: string;
   name: string;
-  hostId: string;
+  host_id: string;
   coverImage?: string;
-  isPrivate: boolean;
+  is_private: boolean;
   genre?: string;
   mood?: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Message {
   id: string;
-  roomId: string;
-  userId: string;
+  room_id: string;
+  user_id: string;
   content: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Track {
