@@ -1,22 +1,32 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { User, Room } from '../types'
-import { LogOut, Plus } from 'lucide-react'
+import { LogOut, Plus, Crown } from 'lucide-react'
 
 interface HomePageProps {
   user: User
   onLogout: () => void
+  onAdminAccess?: () => void
 }
 
-export default function HomePage({ user, onLogout }: HomePageProps) {
+export default function HomePage({ user, onLogout, onAdminAccess }: HomePageProps) {
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateRoom, setShowCreateRoom] = useState(false)
   const [newRoomName, setNewRoomName] = useState('')
   const [error, setError] = useState('')
+  const [adminClicks, setAdminClicks] = useState(0)
 
   useEffect(() => {
     loadRooms()
+    // Admin Easter Egg: Keyboard shortcut
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        onAdminAccess?.()
+      }
+    }
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
   }, [])
 
   const loadRooms = async () => {
@@ -66,13 +76,27 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
     onLogout()
   }
 
+  const handleLogoClick = () => {
+    setAdminClicks(adminClicks + 1)
+    if (adminClicks + 1 === 3) {
+      onAdminAccess?.()
+      setAdminClicks(0)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-surface-900 pb-20">
       {/* Header */}
       <div className="sticky top-0 z-40 px-6 py-4 bg-surface-900/80 backdrop-blur border-b border-white/5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">🎵 Blend</h1>
+            <h1
+              onClick={handleLogoClick}
+              className="text-2xl font-bold cursor-pointer hover:opacity-80 transition-opacity"
+              title={adminClicks === 1 || adminClicks === 2 ? `${3 - adminClicks} clicks to admin` : ''}
+            >
+              🎵 Blend
+            </h1>
             <p className="text-white/40 text-sm">Welcome, {user.displayName}</p>
           </div>
           <button
